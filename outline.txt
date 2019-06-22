@@ -1,0 +1,63 @@
+Why do we care about groups? (10 min)
+-------------------------------------
+	What are groups? (6-7 min)
+	|---- Set of items
+	|---- Binary operation
+	|---- Closure
+	|---- Identity
+	|---- Inverses
+	|	|---- e1g = g
+	|	|---- e2g = g
+	|	|---- e1g = e2g
+	|	|---- e1 = e2
+	|	|---- Note: also holds for any ag = h, bg = h. The operation is invertible, after all
+	|
+	|---- Associativity
+	|---- Magma, monoid, group, abelian group, 
+	|	|---- Magma: closure
+	|	|---- Monoid: closure, identity
+	|	|---- Group: closure, identity, inverses, associativity
+	|
+	|---- Any statement that holds true for a magma, also holds true for monoids and groups
+	|---- Commutativity
+	|	|---- Abelian group: closure, identity, inverses, associativity, commutativity
+	|
+	|---- Distributivity
+	|---- Rings, Integral Domains, Fields
+	|	|---- Ring: group with an extra (closed) binary operation which is distributive, and few other properties
+	|	|---- Field: Invertibility of second operation
+	|
+	|---- Anything which is true for groups is true for any of these more constrained objects
+		|---- Fewer constraints mean fewer conclusions can be drawn
+	
+	Why do we care? (2-3 min)
+	|---- It turns out that the relatively small number of constraints allows us to do a lot
+	|---- Many familiar mathematical objects are at least a group
+	|---- Notably, the rubik's cube permutation group
+	|	|---- set is all permutations reachable from basic face turns
+	|	|---- operation is perm multiplication
+	|		|---- Closure, Identity, Inverses, Associativity
+	|
+	|---- Shoutout to cryptography, digital communications
+
+Results in Group Theory Useful for Solving Rubik's Cubes (10 min)
+-----------------------------------------------------------------
+	Unavoidable Definitions & Background (3 min)
+	|---- Generators ("closure" of an element)
+	|---- Subgroup
+	|	|---- Example: permutations reachable only with F
+	|
+	|---- Orbits
+	|---- Stabilizer subgroup
+	
+	Most advanced results we will need to solve the cube (7 min)
+	|---- Cosets
+	|---- Lagrange's Theorem
+	|---- Orbit-Stabilizer Theorem
+	|---- Shreier's Lemma
+	
+Final Cube Solution Technique (10 min)
+--------------------------------------
+	|---- Computing Orbit Transversals
+	|---- Chain of stabilizing subgroups
+	|---- Sifting
