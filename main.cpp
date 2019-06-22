@@ -166,6 +166,10 @@ struct perm {
 		vector<int> newmapping(n_larger);
 		//iota(begin(newtab), end(newtab), 0);
 		
+		for (int i = 0; i < n_larger; i++) {
+			newmapping[i] = (i^*this)^other;
+		}
+		
 		if (mapping.size() < other.mapping.size()) {	
 			int i;	
 			for (i = 0; i < int(mapping.size()); i++)
@@ -174,13 +178,11 @@ struct perm {
 				newmapping[i] = other.mapping[i];
 		} else {	
 			int i;
-			for (i = 0; i < int(other.mapping.size()); i++) {
-				//BUGFIX: other.mapping may not contain an element for
-				//all the outputs of mapping
-				newmapping[i] = mapping[i]^other;
+			for (i = 0; i < n_larger; i++) {
+				int tmp = mapping[i];
+				if (tmp >= int(other.mapping.size())) newmapping[i] = tmp;
+				else newmapping[i] = other.mapping[tmp];
 			}
-			for (;i < int(mapping.size()); i++)
-				newmapping[i] = mapping[i];
 		}
 		
 		//cout << "\tnewmapping = " << newmapping << el;
@@ -314,7 +316,6 @@ vector<perm> orbit(string label, vector<perm> gens) {
 	return orbit(pos, gens);
 }
 
-
 int main() {
 	shared_ptr<nmap> rubiks = make_shared<nmap>();
 	perm U(rubiks,"( 1, 3, 8, 6)( 2, 5, 7, 4)( 9,33,25,17)(10,34,26,18)(11,35,27,19)", "U");
@@ -341,8 +342,4 @@ int main() {
 	
 	perm test = U*F*-U;
 	cout << test << el;
-	
-	for (int i = 0; i < rubiks->n; i++) {
-		cout << (*rubiks)[i] << " goes to " << (*rubiks)[i^test] << el;
-	}
 }
