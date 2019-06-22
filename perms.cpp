@@ -9,6 +9,7 @@ vector<perm> orbit(int pos, vector<perm> gens) {
 	
 	//ret will contain the Shreier tree
 	vector<perm> ret(names->n, perm());
+	ret[0] = perm(gens[0].names); //Create identity
 	
 	queue<int> frontier;
 	frontier.push(pos);
@@ -96,11 +97,16 @@ ostream& operator<< <perm> (ostream& o, vector<perm> const& v) {
 	auto delim = "\n\t";
 	int index = 0;
 	for (auto const& i: v) {
-		if (i)
-			o << delim << (*i.names)[index] << ":\t" << i;
-		else
+		/*
+		if (i) {
+			nmap tmp = *i.names;
+			o << delim << tmp[index];
+			o << ":\t" << i;
+		} else
 			o << delim << "(" << index << "):\t" << i;
 		index++;
+		* */
+		o << delim << i;
 	}
 	return o << "\n}";
 }

@@ -3,7 +3,7 @@
 
 #include "nmap.h"
 #include <memory> //shared_ptr
-#include <utility> //make_shared
+#include <utility> //make_shared, move
 #include <vector>
 #include <string>
 #include <cstring> //strtok
@@ -24,7 +24,7 @@ struct perm {
 	perm() = default;
 	
 	//Make identity permutation
-	perm(std::shared_ptr<nmap> n) : names(n), inverted(false) {}
+	perm(std::shared_ptr<nmap> n) : names(n), inverted(false), label("e") {}
 	
 	//Build permutation from cycle notation in new namespace
 	perm(std::string p) : perm(std::make_shared<nmap>(),p) {}
@@ -102,6 +102,69 @@ struct perm {
 		return p.mapping[i];
 	}
 	
+	friend int& operator^= (int &i, perm const& p) {
+		return i = i^p;
+	}
+	
+	perm operator*= (perm const& other) {
+		if (names != other.names) return *this;
+		
+		int n_larger = std::max(mapping.size(), other.mapping.size());
+		std::vector<int> newmapping(n_larger);
+		//iota(begin(newtab), end(newtab), 0);
+		
+		for (int i = 0; i < n_larger; i++) {
+			newmapping[i] = (i^*this)^other;
+		}
+		
+		if (mapping.size() < other.mapping.size()) {	
+			int i;	
+			for (i = 0; i < int(mapping.size()); i++)
+				newmapping[i] = other.mapping[mapping[i]];
+			for (;i < int(other.mapping.size()); i++)
+				newmapping[i] = other.mapping[i];
+		} else {	
+			int i;
+			for (i = 0; i < n_larger; i++) {
+				int tmp = mapping[i];
+				if (tmp >= int(other.mapping.size())) newmapping[i] = tmp;
+				else newmapping[i] = other.mapping[tmp];
+			}
+		}
+		
+		//cout << "\tnewmapping = " << newmapping << el;
+		std::string newname;
+		bool hasleft = false;
+		if (label != "e") {
+			hasleft = true;
+			newname += label;
+			if (inverted) {
+				if (newname.back() == 'i')
+					newname.pop_back();
+				else
+					newname += "i";
+			}
+		}
+		
+		if (other.label != "e") {
+			if (hasleft) newname += "." + other.label;
+			else newname += other.label;
+			
+			if (other.inverted) {
+				if (newname.back() == 'i')
+					newname.pop_back();
+				else
+					newname += "i";
+			}
+		} else {
+			if (!hasleft) newname += "e";
+		}
+		
+		label = std::move(newname);
+		mapping = std::move(newmapping);
+		return *this;
+	}
+	
 	perm operator* (perm const& other) const {
 		if (names != other.names) return *this;
 		
@@ -129,11 +192,53 @@ struct perm {
 		}
 		
 		//cout << "\tnewmapping = " << newmapping << el;
-		std::string newname = label;
-		if (inverted) newname += "i";
-		newname += "." + other.label;
-		if (other.inverted) newname += "i";
+		std::string newname;
+		bool hasleft = false;
+		if (label != "e") {
+			hasleft = true;
+			newname += label;
+			if (inverted) {
+				if (newname.back() == 'i')
+					newname.pop_back();
+				else
+					newname += "i";
+			}
+		}
+		
+		if (other.label != "e") {
+			if (hasleft) newname += "." + other.label;
+			else newname += other.label;
+			
+			if (other.inverted) {
+				if (newname.back() == 'i')
+					newname.pop_back();
+				else
+					newname += "i";
+			}
+		} else {
+			if (!hasleft) newname += "e";
+		}
 		return perm(names, newmapping, newname);
+	}
+	
+	bool operator< (perm const& other) const {		
+		int n_smallest = std::min(mapping.size(), other.mapping.size());
+		int i;
+		for (i = 0; i < n_smallest; i++) {
+			if (mapping[i] < other.mapping[i]) return true;
+			else if (other.mapping[i] < mapping[i]) return false;
+		}
+		
+		//If we got to here, that means they are equal
+		if (mapping.size() < other.mapping.size()) {
+			for (; i < int(other.mapping.size()); i++) {
+				//This can only happen if the rest of other.mapping is
+				//not the identity. We know identity is smallest
+				if (i != other.mapping[i]) return true;
+			}
+			return false;
+		} else return false;
+		
 	}
 	
 	operator bool() const {
@@ -155,6 +260,12 @@ struct perm {
 			newmapping[mapping[i]] = i;
 		mapping = newmapping;
 		return *this;
+	}
+	
+	int numFactors() const {
+		int ret = 1;
+		for (char c : label) if (c == '.') ret++;
+		return ret;
 	}
 };
 
