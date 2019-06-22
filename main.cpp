@@ -168,48 +168,37 @@ int operator^ (int i, perm const& p) {
 }
 
 ostream& operator<< (ostream& o, perm const& p) {
-	cout << p.mapping << el;
+	//cout << p.mapping << el;
 	
-			//This commented code will eventually get used for pretty-printing
-		/*
-		//cout << "\t" << v << el;
-		cycles.push_back(0);
-		
-		vector<int> marked(names->n, 0);
-		
-		int pos = 0;
-		int in_cycle = 0;
-		while (pos < names->n) {
-			if (v[pos] == pos) {
-				marked[pos] = 1;
-				in_cycle = 0;
-				pos++; //Skip singletons
-			} else if (marked[pos]) {
-				if (in_cycle) cycles.push_back(data.size()); 
-				in_cycle = 0;
-				pos++; //Skip marked elements
-			} else {
-				marked[pos] = 1;
-				data.push_back(pos);
-				pos = v[pos];
-				in_cycle = 1;
-			}
-		}
-		* 
-		* 
-	if(p.cycles.size() == 1) {
-		return o << "()";
-	}
+	vector<int> marked(p.mapping.size(), 0);
 	
-	for (unsigned i = 0; i < p.cycles.size() - 1; i++) {
-		auto delim = "(";
-		for (int j = p.cycles[i]; j < p.cycles[i+1]; j++) {
-			o << delim << (*p.names)[p.data[j]];
+	auto delim = "(";
+	
+	bool wrote_something =  false;
+	int pos = 0;
+	int in_cycle = 0;
+	while (pos < int(p.mapping.size())) {
+		if ((pos^p) == pos) {
+			marked[pos] = 1;
+			in_cycle = 0;
+			pos++; //Skip singletons
+		} else if (marked[pos]) {
+			if (in_cycle) o << ")";
+			in_cycle = 0;
+			pos++; //Skip marked elements
+		} else {
+			marked[pos] = 1;
+			//data.push_back(pos);
+			if (in_cycle == 0) delim = "(";
+			o << delim << (*p.names)[pos];
+			wrote_something = true;
 			delim = ",";
+			pos = pos^p;
+			in_cycle = 1;
 		}
-		o << ")";
 	}
-		* */
+	
+	if (!wrote_something) o << "()";
 	
 	return o;
 }
@@ -246,6 +235,10 @@ int main() {
 	p3 = p3*-p3;
 	cout << p3 << el;
 	
+	perm p3tmp = p3;
+	for (int i = 0; i < 14; i++) p3 = p3*p3tmp;
+	
 	cout << "Hello world" << el;
+	cout << p3 << el;
 	for (int i = 1; i < 9; i++) cout << (i^p3) << el;
 }
