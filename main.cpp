@@ -68,13 +68,13 @@ struct nmap {
 
 struct perm {
 	shared_ptr<nmap> names;
-	vector<int> mapping;
 	bool inverted;
+	vector<int> mapping;
 	
 	perm() = default;
 	
 	//Make identity permutation
-	perm(shared_ptr<nmap> n) : names(n), cycles{0}, inverted(false) {}
+	perm(shared_ptr<nmap> n) : names(n), inverted(false) {}
 	
 	perm(string p) : perm(make_shared<nmap>(),p) {}
 	
@@ -104,7 +104,7 @@ struct perm {
 		cycles.push_back(pos); //Pushes the size of data to the end of cycles
 		//in order to simplify iteration
 		
-		mapping(vector<int>(names->n);
+		mapping = vector<int>(names->n);
 		iota(begin(mapping), end(mapping), 0);
 		
 		for (int i = int(cycles.size()) - 1; i > 0; i--) {
@@ -119,8 +119,58 @@ struct perm {
 		}
 	}
 	
-	perm(shared_ptr<nmap> n, vector<int> v) : names(n), inverted(false), mapping(v) {
-		//This commented code will eventually get used for pretty-printing
+	perm(shared_ptr<nmap> n, vector<int> v) : names(n), inverted(false), mapping(v) {}
+	
+	perm operator* (perm const& other) {
+		if (names != other.names) return *this;
+		
+		int n_larger = max(mapping.size(), other.mapping.size());
+		vector<int> newmapping(n_larger);
+		//iota(begin(newtab), end(newtab), 0);
+		
+		if (mapping.size() < other.mapping.size()) {	
+			int i;	
+			for (i = 0; i < int(mapping.size()); i++)
+				newmapping[i] = other.mapping[mapping[i]];
+			for (;i < int(other.mapping.size()); i++)
+				newmapping[i] = other.mapping[i];
+		} else {	
+			int i;
+			for (i = 0; i < int(other.mapping.size()); i++)
+				newmapping[i] = other.mapping[mapping[i]];
+			for (;i < int(mapping.size()); i++)
+				newmapping[i] = mapping[i];
+		}
+		
+		return perm(names, newmapping);
+	}
+	
+	operator bool() {
+		return bool(names);
+	}
+	
+	perm operator-() {
+		perm ret(*this);
+		ret.inverted = !inverted;
+		return ret;
+	}
+	
+	perm& invert() {
+		inverted = !inverted;
+		return *this;
+	}
+};
+
+int operator^ (int i, perm const& p) {
+	if (i < 0 || i >= int(p.mapping.size())) return i;
+	
+	return p.mapping[i];
+}
+
+ostream& operator<< (ostream& o, perm const& p) {
+	cout << p.mapping << el;
+	
+			//This commented code will eventually get used for pretty-printing
 		/*
 		//cout << "\t" << v << el;
 		cycles.push_back(0);
@@ -145,99 +195,8 @@ struct perm {
 				in_cycle = 1;
 			}
 		}
-		* */
-	}
-	
-	perm operator* (perm const& other) {
-		if (names != other.names) return *this;
-		
-		vector<int> cur(names->n);
-		iota(begin(cur), end(cur), 0);
-		
-		if (other.inverted == false) {
-			for (int i = int(other.cycles.size()) - 1; i > 0; i--) {
-				//other.cycles[i]-1 is rightmost element in this cycle
-				int j = other.cycles[i]-1;
-				//Cache the location of the "right parenthesis" (see TAOCP)
-				int hole_index = other.data[j];
-				//tmp is the current value at that position
-				int tmp = cur[other.data[j]];
-				for (j--; j >= other.cycles[i-1]; j--) swap(cur[other.data[j]], tmp);
-				cur[hole_index] = tmp;
-			}
-		} else {
-			for (int i = int(other.cycles.size()) - 1; i > 0; i--) {
-				//other.cycles[i-1] is leftmost element in this cycle
-				int j = other.cycles[i-1];
-				//Cache the position of the "leftt parenthesis" (see TAOCP)
-				int hole_index = other.data[j];
-				//tmp is the current value at that position
-				int tmp = cur[other.data[j]];
-				
-				for (; j < other.cycles[i]; j++) swap(cur[other.data[j]], tmp);
-				cur[hole_index] = tmp;
-			}
-		}
-		
-		if (inverted == false) {
-			for (int i = int(cycles.size()) - 1; i > 0; i--) {
-				int j = cycles[i]-1;
-				int tmp = cur[data[j]];
-				int hole_index = data[j];
-				for (j--; j >= cycles[i-1]; j--) swap(cur[data[j]], tmp);
-				cur[hole_index] = tmp;
-			}
-		} else {
-			for (int i = int(cycles.size()) - 1; i > 0; i--) {
-				//other.cycles[i-1] is leftmost element in this cycle
-				int j = cycles[i-1];
-				//Cache the position of the "leftt parenthesis" (see TAOCP)
-				int hole_index = data[j];
-				//tmp is the current value at that position
-				int tmp = cur[data[j]];
-				
-				for (; j < cycles[i]; j++) swap(cur[data[j]], tmp);
-				cur[hole_index] = tmp;
-			}
-		}
-		
-		return perm(names, cur);
-	}
-	
-	operator bool() {
-		return bool(names);
-	}
-	
-	perm operator-() {
-		perm ret(*this);
-		ret.inverted = !inverted;
-		return ret;
-	}
-	
-	perm& invert() {
-		inverted = !inverted;
-		return *this;
-	}
-};
-
-int operator^ (int i, perm const& p) {
-	if (i < 0 || i >= p.names->n) return i;
-	
-	auto it = find(begin(p.data), end(p.data), i);
-	if (it == end(p.data)) return i;
-	int index = it - begin(p.data);
-	index++;
-	auto cyc_it = find(begin(p.cycles), end(p.cycles), index);
-	if (cyc_it != end(p.cycles)) {
-		//Need to wrap back
-		index = *(--cyc_it);
-	}
-	return p.data[index];
-}
-
-ostream& operator<< (ostream& o, perm const& p) {
-	//cout << "\t" << p.data << "\n\t" << p.cycles << el;
-	
+		* 
+		* 
 	if(p.cycles.size() == 1) {
 		return o << "()";
 	}
@@ -250,6 +209,7 @@ ostream& operator<< (ostream& o, perm const& p) {
 		}
 		o << ")";
 	}
+		* */
 	
 	return o;
 }
@@ -263,9 +223,7 @@ vector<perm> orbit(int pos, vector<perm> gens) {
 	
 	while(!frontier.empty()) {
 		int cur = frontier.front();
-		frontier.pop();
-		
-		
+		frontier.pop();		
 	}
 	
 	return ret;
