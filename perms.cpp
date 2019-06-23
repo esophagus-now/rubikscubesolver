@@ -95,7 +95,7 @@ template <>
 ostream& operator<< <perm> (ostream& o, vector<perm> const& v) {
 	o << "{";
 	auto delim = "\n\t";
-	int index = 0;
+	//int index = 0;
 	for (auto const& i: v) {
 		/*
 		if (i) {

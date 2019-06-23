@@ -267,6 +267,17 @@ struct perm {
 		for (char c : label) if (c == '.') ret++;
 		return ret;
 	}
+	
+	int firstMover() const {
+		for (int i = 0; i < int(mapping.size()); i++) {
+			if (mapping[i] != i) return i;
+		}
+		return -1; //If this is an identity perm
+	}
+	
+	bool isIdentity() const {
+		return (firstMover() == -1);
+	}
 };
 
 std::vector<perm> orbit(int pos, std::vector<perm> gens);
